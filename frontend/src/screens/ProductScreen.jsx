@@ -8,11 +8,7 @@ import axios from 'axios'
 function ProductScreen() {
 const [product, setProduct] = useState({})
 
-
-
 const {id:productId} = useParams()
-
-
 
 useEffect(()=>{
   const fetchProduct = async()=>{
