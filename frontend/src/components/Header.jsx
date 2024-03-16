@@ -1,41 +1,47 @@
 import React from 'react';
-import { Navbar, Nav, Container } from 'react-bootstrap';
+import { Badge, Navbar, Nav, Container } from 'react-bootstrap';
 import { FaShoppingCart, FaUser } from 'react-icons/fa';
-import logo from '../assets/logo.png'
-import {LinkContainer} from 'react-router-bootstrap'
+import logo from '../assets/logo.png';
+import { LinkContainer } from 'react-router-bootstrap';
+import { useSelector } from 'react-redux';
 
 const HeaderComponent = () => {
+  const { cartItems } = useSelector((state) => state.cart);
+
   return (
     <>
       <Navbar bg="dark" variant="dark" expand="md" collapseOnSelect>
         <Container>
-            <LinkContainer to='/'>
-              <div>
-          <Navbar.Brand >
-            <img src={logo} alt="logo" />
-            ProShop
+          <LinkContainer to='/'>
+            <Navbar.Brand>
+              <img src={logo} alt="logo" />
+              ProShop
             </Navbar.Brand>
-            </div>
-            </LinkContainer>
+          </LinkContainer>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className='ms-auto'>
-                <LinkContainer to='cart'> 
-                <div>
-                <Nav.Link ><FaShoppingCart />Cart</Nav.Link>
-                </div>
-                </LinkContainer>
+              <LinkContainer to='/cart'>
+                <Nav.Link>
+                  <FaShoppingCart /> Cart
+                  {cartItems.length > 0 && (
+                    <Badge pill bg='success' style={{ marginLeft: "5px" }}>
+                      {cartItems.reduce((a, c) => a + c.qty, 0)}
+                    </Badge>
+                  )}
+                </Nav.Link>
+              </LinkContainer>
               <LinkContainer to='/login'>
-              <div>
-                 <Nav.Link ><FaUser />Sign In</Nav.Link>
-                 </div>
-                 </LinkContainer>
+                <Nav.Link>
+                  <FaUser /> Sign In
+                </Nav.Link>
+              </LinkContainer>
             </Nav>
           </Navbar.Collapse>
         </Container>
       </Navbar>
     </>
-  )
+  );
 }
 
 export default HeaderComponent;
