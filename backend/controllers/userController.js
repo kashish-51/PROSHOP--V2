@@ -169,5 +169,4 @@ export{
     deleteUser,
     getUsersById,
     updateUser
-
 }
