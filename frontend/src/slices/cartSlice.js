@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { updateCart } from "../utils/cartUtils";
 
 // local storage can only hold strings.that's why we parse it to convert into js object
-const initialState = localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart")) : {cartItems: []}
+const initialState = localStorage.getItem("cart") ? JSON.parse(localStorage.getItem("cart")) : {cartItems: [], shippingAddress: {}, paymentMethod: 'PayPal'};
 
 
 const cartSlice = createSlice({
@@ -11,11 +11,9 @@ const cartSlice = createSlice({
  //we will have all the functions related to cart in reducer object like add cart, remove cart etc
  reducers: {
     addToCart: (state, action) => { //state is just the current state of cart  and in action there is data inside payload which we can access by action.payload
-  
         const item = action.payload;
         //x is current item in cart and if it matches to item id in payload then it simply means that the item exist in cart
         const existItem = state.cartItems.find((x) => x._id === item._id);
-
         if(existItem) {
             state.cartItems = state.cartItems.map((x) => x._id === existItem._id ? item : x)
         }else {
@@ -31,9 +29,17 @@ const cartSlice = createSlice({
 
      return updateCart(state);
 
+    },
+    saveShippingAdddress: (state, action)=>{
+        state.shippingAddress = action.payload;
+        return updateCart(state);
+    },
+    savePaymentMethod:(state, action) => {
+        state.paymentMethod = action.payload;
+        return updateCart(state);
     }
  },
 });
 
-export const {addToCart, removeFromCart} = cartSlice.actions;
+export const {addToCart, removeFromCart, saveShippingAdddress, savePaymentMethod} = cartSlice.actions;
 export default cartSlice.reducer

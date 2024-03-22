@@ -23,7 +23,6 @@ const HeaderComponent = () => {
       await logoutApiCall().unwrap();
       dispatch(logout());
       navigate('/login');
-      
     } catch (error) {
       console.log(error)
     }
