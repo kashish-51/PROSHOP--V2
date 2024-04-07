@@ -45,7 +45,8 @@ const cartSlice = createSlice({
  },
 });
 
-export const {addToCart, 
+export const {
+    addToCart, 
     removeFromCart, 
     saveShippingAdddress,
     clearCartItems, 
