@@ -1,20 +1,24 @@
 import {LinkContainer} from 'react-router-bootstrap';
 import {Table, Button, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrash} from 'react-icons/fa';
+import {useParams} from 'react-router-dom';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import { toast } from 'react-toastify';
 import { useGetProductsQuery, useCreateProductMutation, useDeleteProductMutation } from '../../slices/productsApiSlice';
+import Paginate from '../../components/Paginate';
 
 
 const ProductListScreen = () => {
+
+  const {pageNumber} = useParams();
    
-    const {data:products, isLoading, error, refetch} = useGetProductsQuery();
+    const {data, isLoading, error, refetch} = useGetProductsQuery({pageNumber});
     // console.log(products)
    
     const [createProduct, {isLoading: loadingCreate}] = useCreateProductMutation();
 
-const [deleteProduct, {isLoading: loadingDelete}] = useDeleteProductMutation();
+    const [deleteProduct, {isLoading: loadingDelete}] = useDeleteProductMutation();
 
 
 
@@ -59,7 +63,7 @@ if(window.confirm('Are you sure you want to create a new product?')){
       </Row>
       {loadingCreate && <Loader/>}
       {loadingDelete && <Loader/>}
-      {isLoading ? <Loader/> : error ? <Message variant='danger'>{error}</Message> : (
+      {isLoading ? <Loader/> : error ? <Message variant='danger'>{error.data.message}</Message> : (
         <>
         <Table striped hover responsive className='table-sm'>
 
@@ -75,7 +79,7 @@ if(window.confirm('Are you sure you want to create a new product?')){
 </tr>
             </thead>
             <tbody>
-               {products.map((product)=>(
+               {data.products.map((product)=>(
                 <tr key={product._id}>
                 <td>{product._id}</td>
                 <td>{product.name}</td>
@@ -96,6 +100,7 @@ if(window.confirm('Are you sure you want to create a new product?')){
                ))} 
             </tbody>
         </Table>
+        <Paginate pages={data.pages} page={data.page} isAdmin={true}/>
         </>
       )}
     </>

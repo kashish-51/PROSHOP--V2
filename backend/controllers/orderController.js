@@ -1,49 +1,62 @@
 import asyncHandler from '../middleware/asyncHandler.js'
 import Order from "../models/orderModel.js";
+import Product from '../models/productModel.js';
+import { calcPrices } from '../utils/calcPrices.js';
+import { verifyPayPalPayment, checkIfNewTransaction } from '../utils/paypal.js';
 
-//@desc create new order
-//@route POST /api/orders
-//@access Private
-
+// @desc    Create new order
+// @route   POST /api/orders
+// @access  Private
 const addOrderItems = asyncHandler(async (req, res) => {
-     // Destructure request body to extract required data
-const {orderItems,
-   shippingAddress, 
-     paymentMethod, 
-     itemsPrice, 
-     taxPrice, 
-     shippingPrice, 
-     totalPrice} = req.body;
-
-     if(orderItems && orderItems.length === 0){   
-         // If orderItems is empty, send a 400 Bad Request response with a message and throw an error
-        res.json(404);
-        throw new Error("No order items");
-     }else{
-        // If orderItems exist, create a new Order document
-        const order = new Order({
-             // Map each item in orderItems array to a new object with modified properties
-            orderItems:orderItems.map((x)=>({
-                ...x,
-                product:x._id,   // Set the product property to the _id of the item
-                _id:undefined   // Remove _id property from each item
-            })),
-
-            // Assuming req.user contains information about the logged-in user
-            user:req.user._id, 
-            shippingAddress,
-            paymentMethod,
-            itemsPrice,
-            taxPrice,
-            shippingPrice,
-            totalPrice
-        });
-        const createOrder = await order.save();
-
-        res.status(201).json(createOrder);
-     }
-})
-
+    const { orderItems, shippingAddress, paymentMethod } = req.body;
+  
+    if (orderItems && orderItems.length === 0) {
+      res.status(400);
+      throw new Error('No order items');
+    } else {
+      // NOTE: here we must assume that the prices from our client are incorrect.
+      // We must only trust the price of the item as it exists in
+      // our DB. This prevents a user paying whatever they want by hacking our client
+  
+      // get the ordered items from our database
+      const itemsFromDB = await Product.find({
+        _id: { $in: orderItems.map((x) => x._id) },
+      });
+  
+      // map over the order items and use the price from our items from database
+      const dbOrderItems = orderItems.map((itemFromClient) => {
+        const matchingItemFromDB = itemsFromDB.find(
+          (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+        );
+        return {
+          ...itemFromClient,
+          product: itemFromClient._id,
+          price: matchingItemFromDB.price,
+          _id: undefined,
+        };
+      });
+  
+      // calculate prices
+      const { itemsPrice, taxPrice, shippingPrice, totalPrice } =
+        calcPrices(dbOrderItems);
+  
+      const order = new Order({
+        orderItems: dbOrderItems,
+        user: req.user._id,
+        shippingAddress,
+        paymentMethod,
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+      });
+  
+      const createdOrder = await order.save();
+  
+      res.status(201).json(createdOrder);
+    }
+  });
+  
 //@desc Get logged in user orders
 //@route GET /api/orders/myorders
 //@access Private

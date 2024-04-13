@@ -7,6 +7,8 @@ import { LinkContainer } from 'react-router-bootstrap';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLogoutMutation } from '../slices/usersApiSlice';
 import { logout } from '../slices/authSlice';
+import SearchBox from './SearchBox';
+import { resetCart } from '../slices/cartSlice';
 
 
 const HeaderComponent = () => {
@@ -22,6 +24,7 @@ const HeaderComponent = () => {
     try {
       await logoutApiCall().unwrap();
       dispatch(logout());
+      dispatch(resetCart());
       navigate('/login');
     } catch (error) {
       console.log(error)
@@ -41,6 +44,7 @@ const HeaderComponent = () => {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className='ms-auto'>
+              <SearchBox/>
               <LinkContainer to='/cart'>
                 <Nav.Link>
                   <FaShoppingCart /> Cart
